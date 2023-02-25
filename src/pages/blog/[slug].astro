@@ -1,0 +1,25 @@
+---
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { getAllPublishedPostsSlugs, getPostBySlug } from '../../lib/api';
+
+export async function getStaticPaths() {
+  const postSlugs = await getAllPublishedPostsSlugs();
+
+  return postSlugs.edges.map(({ node }: any) => {
+    return {
+      params: { slug: node.slug },
+    };
+  });  
+}
+
+const { slug } = Astro.params;
+const post = await getPostBySlug(slug ?? '');
+---
+<BlogLayout title={post.title}>
+  <div class="flex flex-col p-10">
+    <div class="mb-5 text-4xl font-bold">{post.title}</div>
+    <article class="prose lg:prose-xl">
+      <Fragment set:html= {post.content} />
+    </article>
+  </div>
+</BlogLayout>

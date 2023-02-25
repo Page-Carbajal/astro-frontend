@@ -1,0 +1,66 @@
+---
+import ArticleCard from '../../components/blog/ArticleCard.astro';
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import { getLatestPublishedPosts } from '../../lib/api';
+
+const getTextFromHtml = (html: string): string => {
+  // Remove HTML tags
+  const regex = /<[^>]*>/g;
+  const plainText = html.replace(regex, '');
+
+  // Split text into words and calculate sentence length
+  const words = plainText.split(/\s+/);
+  // const sentenceLength = Math.ceil(words.length / 20) * 20;
+
+  // Return first 20 words or sentence length, whichever is less
+  const truncatedText = words.slice(0, 20).join(' ');
+
+  return truncatedText;
+}
+
+const response = await getLatestPublishedPosts();
+const posts = response?.nodes?.map( (p: any)=> {
+  const formatter = new Intl.DateTimeFormat('en-us', {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  p.shortContent =  getTextFromHtml(p.excerpt ?? p.content);
+  p.formattedDate = formatter.format( Date.parse(p.date) );
+
+  return p;
+});
+
+---
+
+<BlogLayout title="Page Carbajal &ndash; Software Engineering Blog">
+	<div class="bg-gray-600 text-white">
+    <section class="py-24">
+      <div class="container px-4 mx-auto">
+        <div class="max-w-2xl mx-auto mb-16 text-center">
+          <span class="text-blue-400 uppercase font-semibold tracking-widest" contenteditable="false">Iaax Page</span>
+          <h2 class="my-5 text-4xl font-bold font-heading">Blog de Desarrollo Personal</h2>
+          <p class="text-lg text-gray-500">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque massa nibh, pulvinar vitae aliquet nec, accumsan aliquet orci.</p>
+        </div>
+        <div class="flex flex-wrap -mx-4 -mb-8 md:-mb-12">
+          {posts.map((post: any) => (
+            <ArticleCard
+            title={post.title}
+            content={post.shortContent}
+            slug={post.slug}
+            date={post.formattedDate}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+							
+		<section class="py-24 bg-blue-50">
+			<div class="container mx-auto px-4">
+				<p class="text-center text-sm text-gray-500 pt-8 px-4 border-t border-gray-100">Made with Love @ Guadalajara M&eacute;xico</p>
+			</div>
+		</section>
+	</div>
+
+</Layout>
+
